@@ -1,8 +1,8 @@
 tweets = []
 num_tweets = 0
 
-TWEET_FILE = "copied_whalefact_tweets.txt"  #'/home/rm/jonnysun_tweets/jonny_jan2016_may2017.txt'
-OUT_FILE = "whale_tweets.txt"  #'jonny_tweets.txt'
+TWEET_FILE = "copied_whalefact_tweets.txt" 
+OUT_FILE = "whale_tweets.txt" 
 
 with open(TWEET_FILE, "r") as myfile:
     lines = myfile.readlines()
@@ -30,6 +30,4 @@ with open(OUT_FILE, "w") as f:
     f.write(text_corpus)
 
 
-#PYTHONPATH=src ./train.py --dataset /home/rm/gpt2-whalefacts/whale_tweets_all.txt --model_name=345M --val_every 200 --sample_every=250 --learning_rate=0.0001 --run_name='whalefacts'
-
-#PYTHONPATH=src ./train.py --dataset /home/rm/gpt2-whalefacts/jonny_tweets.txt --model_name=345M --val_every 200 --sample_every=250 --learning_rate=0.0001 --run_name='jonny_test'
+#PYTHONPATH=src ./train.py --dataset whale_tweets_all.txt --model_name=345M --val_every 200 --sample_every=250 --learning_rate=0.0001 --run_name='whalefacts'
