@@ -1,3 +1,5 @@
+# search example -- from:@TWITTERHANDLE exclude:replies since:2016-01-01 until:2017-06-29 
+
 tweets = []
 num_tweets = 0
 
