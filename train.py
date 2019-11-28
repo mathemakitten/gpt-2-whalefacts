@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Usage:
 #  PYTHONPATH=src ./train --dataset <file|directory|glob>
+# PYTHONPATH=src python train.py --dataset tweets/whalefakes_training_data_20191119.txt --model_name 1558M --optimizer adam --sample_every 100 --sample_num 100 --run_name whales_nov2019_small
 
 import argparse
 import json
@@ -16,9 +17,13 @@ from load_dataset import load_dataset, Sampler
 from accumulate import AccumulatingOptimizer
 import memory_saving_gradients
 
+import os
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+
 CHECKPOINT_DIR = 'checkpoint'
 SAMPLE_DIR = 'samples'
 
+SEQ_LENGTH = 448
 
 parser = argparse.ArgumentParser(
     description='Fine-tune GPT-2 on your custom dataset.',
@@ -81,7 +86,9 @@ def main():
 
     if args.model_name in ['345M', '1558M']:
         args.memory_saving_gradients = True
-        if args.optimizer == 'adam':
+        #if args.optimizer == 'adam':
+        #    args.only_train_transformer_layers = True
+        if args.optimizer in ['adam', 'sgd', 'momentum']:
             args.only_train_transformer_layers = True
 
     config = tf.ConfigProto()
@@ -95,6 +102,7 @@ def main():
             tf.nn.sparse_softmax_cross_entropy_with_logits(
                 labels=context[:, 1:], logits=output['logits'][:, :-1]))
 
+        # Log the loss to tensorboard
         if args.val_every > 0:
             val_context = tf.placeholder(tf.int32, [args.val_batch_size, None])
             val_output = model.model(hparams=hparams, X=val_context)
@@ -120,12 +128,15 @@ def main():
             opt = tf.train.AdamOptimizer(learning_rate=args.learning_rate)
         elif args.optimizer == 'sgd':
             opt = tf.train.GradientDescentOptimizer(learning_rate=args.learning_rate)
+        elif args.optimizer == 'momentum':
+            opt = tf.train.MomentumOptimizer(learning_rate=args.learning_rate, momentum=0.9)
         else:
             exit('Bad optimizer:', args.optimizer)
 
         if args.accumulate_gradients > 1:
             if args.memory_saving_gradients:
                 exit("Memory saving gradients are not implemented for gradient accumulation yet.")
+                # TODO HN accumulate gradients is not running for 345M and up bc memory_saving is on
             opt = AccumulatingOptimizer(
                 opt=opt,
                 var_list=train_vars)
@@ -181,7 +192,7 @@ def main():
             # Sample from validation set once with fixed seed to make
             # it deterministic during training as well as across runs.
             val_data_sampler = Sampler(val_chunks, seed=1)
-            val_batches = [[val_data_sampler.sample(1024) for _ in range(args.val_batch_size)]
+            val_batches = [[val_data_sampler.sample(SEQ_LENGTH) for _ in range(args.val_batch_size)]
                            for _ in range(args.val_batch_count)]
 
         counter = 1
@@ -244,7 +255,8 @@ def main():
                     loss=v_val_loss))
 
         def sample_batch():
-            return [data_sampler.sample(1024) for _ in range(args.batch_size)]
+            # return [data_sampler.sample(1024) for _ in range(args.batch_size)]
+            return [data_sampler.sample(SEQ_LENGTH) for _ in range(args.batch_size)]
 
 
         avg_loss = (0.0, 0.0)
