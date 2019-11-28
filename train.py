@@ -56,6 +56,7 @@ parser.add_argument('--val_batch_size', metavar='SIZE', type=int, default=2, hel
 parser.add_argument('--val_batch_count', metavar='N', type=int, default=40, help='Number of batches for validation.')
 parser.add_argument('--val_every', metavar='STEPS', type=int, default=0, help='Calculate validation loss every STEPS steps.')
 
+parser.add_argument('--sequence_length', metavar='SEQ_LENGTH', type=int, default=1024, help='Length of sample for batch, in tokens')
 
 def maketree(path):
     try:
@@ -192,7 +193,7 @@ def main():
             # Sample from validation set once with fixed seed to make
             # it deterministic during training as well as across runs.
             val_data_sampler = Sampler(val_chunks, seed=1)
-            val_batches = [[val_data_sampler.sample(SEQ_LENGTH) for _ in range(args.val_batch_size)]
+            val_batches = [[val_data_sampler.sample(args.sequence_length) for _ in range(args.val_batch_size)]
                            for _ in range(args.val_batch_count)]
 
         counter = 1
@@ -256,7 +257,7 @@ def main():
 
         def sample_batch():
             # return [data_sampler.sample(1024) for _ in range(args.batch_size)]
-            return [data_sampler.sample(SEQ_LENGTH) for _ in range(args.batch_size)]
+            return [data_sampler.sample(args.sequence_length) for _ in range(args.batch_size)]
 
 
         avg_loss = (0.0, 0.0)
