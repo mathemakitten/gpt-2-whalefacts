@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Usage:
 #  PYTHONPATH=src ./train --dataset <file|directory|glob>
-# PYTHONPATH=src python train.py --dataset tweets/whalefakes_training_data_20191119.txt --model_name 1558M --optimizer adam --sample_every 100 --sample_num 100 --run_name whales_nov2019_small
+# PYTHONPATH=src python train.py --dataset tweets/whalefakes_training_data_20191119.txt --model_name 1558M --optimizer adam --sample_every 100 --sample_num 100 --run_name whales_nov2019_small --sequence_length=480
 
 import argparse
 import json
